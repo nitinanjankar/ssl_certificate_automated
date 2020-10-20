@@ -1,0 +1,21 @@
+---
+- name: ACME SSL certificates generation
+  hosts: localhost
+  become: true
+  gather_facts: False
+  vars_prompt:
+    - name: "GENERATE_CERTIFICATE"
+      prompt: "Do you want to install ingress router certificates?(True | False)"
+      default: "False"
+
+  tasks:
+    - name: Generate SSL certificates
+      include_role:
+        name: generate_ssl_cert
+      when: GENERATE_CERTIFICATE == "True" or GENERATE_CERTIFICATE == "true"
+
+    - name: Install SSL certificates to OCP
+#      delegate_to: {{ master }}
+      include_role:
+        name: intstall_cert_for_router
+      when: GENERATE_CERTIFICATE == "True" or GENERATE_CERTIFICATE == "true"

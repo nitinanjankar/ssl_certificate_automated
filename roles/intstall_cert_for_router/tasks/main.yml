@@ -1,0 +1,45 @@
+---
+# tasks file for intstall_cert_for_router
+- name: Create certificate path
+  file:
+    path: "{{ certificate_path }}"
+    state: "directory"
+    owner: "{{ acme_sh_become_user }}"
+    group: "{{ acme_sh_become_user }}"
+    mode: "0755"
+
+- name: Copy certificates to master host.
+  copy:
+    src: "{{ acme_sh_copy_certs_to_path }}/"
+    dest: "{{ certificate_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Login to OCP cluster to deploy template and create alertmanager components
+  command: oc login --token="{{ ocp_login_token }}" --server="{{ ocp_server_url }}"
+
+- name: Take the backup of the existing router certs details
+  shell: oc get secret/router-certs -n openshift-ingress -o yaml > "{{ certificate_path }}/router-certs.old.yaml"
+
+- name: Remove the old secret which holding the certs.
+  command: oc delete secret router-certs-test -n openshift-ingress
+  register: result
+
+- debug:
+    msg: "{{result.stdout_lines}}"
+
+
+- name: Create the secret from newly created certs.
+  command: oc create secret tls router-certs-test --cert="{{ certificate_path }}/fullchain-file.pem" --key="{{ certificate_path }}/key-file.key" -n openshift-ingress
+  register: result
+
+- debug:
+    msg: "{{result.stdout_lines}}"
+
+- name: Update the Custom Resource for your router.
+  shell: oc patch ingresscontroller default -n openshift-ingress-operator --type=merge --patch='{"spec":{"defaultCertificate":{"name":"router-certs"}}}'
+  register: result
+
+- debug:
+    msg: "{{result.stdout_lines}}"

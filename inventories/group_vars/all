@@ -1,0 +1,19 @@
+# Group variables for deploying amos monitoring stack on OCP cluster
+
+ocp_login_token: << ocp_login_token >>
+ocp_server_url: << ocp_server_url >> 
+
+certificate_path: << certificate_path >> 
+
+# acme variables
+
+acme_sh_become_user: "root"
+acme_sh_renew_time_in_days: 30
+acme_sh_copy_certs_to_path: << acme_sh_copy_certs_to_path >>                 # "/etc/ssl/ansible"
+acme_sh_default_force_issue: False
+acme_sh_default_force_renew: False
+acme_sh_default_dns_provider: "dns_aws"
+acme_sh_default_dns_provider_api_keys: { "aws_access_key_id":"<< aws_access_key_id >>", "aws_secret_access_key":"<< aws_secret_access_key >>" }
+acme_sh_default_dns_sleep: 60
+acme_sh_domains:
+  - domains: ["<< acme_sh_domains1 >>", "*.<< acme_sh_domains2 >>"] 
