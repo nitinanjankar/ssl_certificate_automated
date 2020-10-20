@@ -1,7 +1,10 @@
 Role Name
 =========
 
-This role will ask the user whether to create a SSL certificates for OCP resources or not. And based on input will proceed further and create or skip the creation and implementation of SSL signed certificates.
+This role will perform the below tasks:
+
+1. Generate acme SSL certificates for domains provided (OpenShift/Any).
+2. Apply the generated SSL certificates to OpenShift ingress router to securely access it's Console and app routes.
 
 Requirements
 ------------
