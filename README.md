@@ -1,10 +1,7 @@
 Role Name
 =========
 
-This role will perform the below tasks:
-
-1. Generate acme SSL certificates for domains provided (OpenShift/Any).
-2. Apply the generated SSL certificates to OpenShift ingress router to securely access it's Console and app routes.
+This role will ask the user whether to create a SSL certificates for OCP resources or not. And based on input will proceed further and create or skip the creation and implementation of SSL signed certificates.
 
 Requirements
 ------------
@@ -32,14 +29,16 @@ Requirements
 
 ```
 cd /home/ec2-user/
-git clone https://github.com/nitinanjankar/ssl_certificate_automated.git
+mkdir /home/ec2-user/ssl_certificates
+cd /home/ec2-user/ssl_certificates
+git clone <path of git repo>
 ```
 
 ## Update host file
 
 Edit inventory file:
 ```
-cd /home/ec2-user/ssl_certificate_automated
+cd openshift4/utils/ssl_cert
 vi inventories/ansible_hosts
 
 ```
@@ -69,29 +68,15 @@ vi inventories/group_vars/all
 |**ocp_login_token**| Token value of OCP cluster user's login | "xfagshssdhg3weg7whwh" |
 |**ocp_server_url**| OCP cluster URL for CLI login | "http://xxxxx.io:6443" |
 |**certificate_path**| Certificate path to copy on remote host |  /var/home/core/ssl_certs |
-|**acme_sh_become_user**| The user on the system that acme.sh will run as | "root" |
-|**acme_sh_renew_time_in_days**| Certificates that need to be renewed will be consider by acme.sh | 90 |
+|**certificate_name**| Certificate tag name in ACM (AWS Certificate Manager) |  amososcp |
+|**acme_sh_default_dns_provider_api_keys**| AWS credentials for instance | "aws_access_key_id", "aws_secret_access_key" |
 |**acme_sh_copy_certs_to_path**| The final destination for your certificates | "/etc/ssl/ansible" |
+|**acme_sh_become_user**| The user on the system that acme.sh will run as | "root" |
 |**acme_sh_default_force_issue**| Only consider using this to update your DNS provider | False |
 |**acme_sh_default_force_renew**| This could be useful to use if your certificates expired | False |
 |**acme_sh_default_dns_provider**| Which DNS provider should you use | "dns_aws" |
-|**acme_sh_default_dns_provider_api_keys**| AWS credentials for instance | "aws_access_key_id", "aws_secret_access_key" |
 |**acme_sh_default_dns_sleep**| acme.sh sleep after attempting to set the TXT record to your DNS records | 60 |
-|**acme_sh_domains**| This list contains a list of domains | "<< api_domain1 >>", "*.<< apps_domain >>" |
 
-# Where to get acme_sh_domains details?
-
-API to the fully qualified domain name: << api_domain1 >>
-
-```
-oc whoami --show-server | cut -f 2 -d ':' | cut -f 3 -d '/' | sed 's/-api././'
-```
-
-WILDCARD to your Wildcard Domain: << apps_domain >>
-
-```
-oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}'
-```
 
 # Which DNS provider should you use?
 
@@ -110,15 +95,15 @@ export AWS_SECRET_ACCESS_KEY="yyyyyyyyyyyyyyyyyyyyyyyyyy"
 Before running the ansible code you must be at <b> openshift4/utils/ssl_cert </b>
 
 ```
-cd /home/ec2-user/ssl_certificate_automated
+cd openshift4/utils/ssl_cert
 
 ansible-playbook -i inventories/ansible_hosts deploy-ssl-cert.yml
 ```
 
 
-## Enable certificates to apply on *.app.<<domain_name>>
+## Validate certificates on AWS Certificate Manager service
 
 1. Login to AWS web console
-2. Go to <b>Certificate Manager</b> service 
-3. For your domain, Click on <b>Reimport Certificates</b> and add respective certs generated on <b><< certificate_path >></b> variable's location.
+2. Go to <b>Certificate Manager</b> service
+3. For your domain, validate the certificate got imported with valid dates.
 4. Validate your certificates got reflected in OCP Web Console.
