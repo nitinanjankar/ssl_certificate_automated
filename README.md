@@ -1,7 +1,10 @@
 Role Name
 =========
 
-This role will ask the user whether to create a SSL certificates for OCP resources or not. And based on input will proceed further and create or skip the creation and implementation of SSL signed certificates.
+This role will perform the below tasks:
+
+1. Generate acme SSL certificates for domains provided (OpenShift/Any).
+2. Apply the generated SSL certificates to OpenShift ingress router to securely access it's Console and app routes.
 
 Requirements
 ------------
@@ -29,16 +32,14 @@ Requirements
 
 ```
 cd /home/ec2-user/
-mkdir /home/ec2-user/ssl_certificates 
-cd /home/ec2-user/ssl_certificates
-git clone <path of git repo>
+git clone https://github.com/nitinanjankar/ssl_certificate_automated.git
 ```
 
 ## Update host file
 
 Edit inventory file:
 ```
-cd openshift4/utils/ssl_cert
+cd /home/ec2-user/ssl_certificate_automated
 vi inventories/ansible_hosts
 
 ```
@@ -109,7 +110,7 @@ export AWS_SECRET_ACCESS_KEY="yyyyyyyyyyyyyyyyyyyyyyyyyy"
 Before running the ansible code you must be at <b> openshift4/utils/ssl_cert </b>
 
 ```
-cd openshift4/utils/ssl_cert
+cd /home/ec2-user/ssl_certificate_automated
 
 ansible-playbook -i inventories/ansible_hosts deploy-ssl-cert.yml
 ```
@@ -119,5 +120,5 @@ ansible-playbook -i inventories/ansible_hosts deploy-ssl-cert.yml
 
 1. Login to AWS web console
 2. Go to <b>Certificate Manager</b> service 
-3. For your domain, Click on Reimport Certificates and add respective certs generated on << certificate_path >> variable's location.
+3. For your domain, Click on <b>Reimport Certificates</b> and add respective certs generated on <b><< certificate_path >></b> variable's location.
 4. Validate your certificates got reflected in OCP Web Console.
