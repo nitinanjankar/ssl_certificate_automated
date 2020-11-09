@@ -34,3 +34,7 @@ acme_sh_default_dns_sleep: 60
 acme_sh_default_extra_flags_issue: ""
 acme_sh_default_extra_flags_renew: ""
 acme_sh_default_extra_flags_install_cert: ""
+
+acme_sh_domains:
+  - domains: []
+

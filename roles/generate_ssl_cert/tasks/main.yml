@@ -30,6 +30,25 @@
     mode: "0755"
   when: not acme_sh_uninstall
 
+- name: export shell LE_API
+  become: no
+  local_action: shell export LE_API=$(oc whoami --show-server | cut -f 2 -d ':' | cut -f 3 -d '/' | sed 's/-api././'); echo $LE_API
+  args:
+    executable: /bin/bash
+  register: LE_API
+
+- name: export shell LE_WILDCARD
+  become: no
+  local_action: shell export LE_WILDCARD=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}'); echo $LE_WILDCARD
+  args:
+    executable: /bin/bash
+  register: LE_WILDCARD
+
+- name: Set facts needed from domains
+  set_fact:
+    acme_sh_domains:
+      - domains: ["{{ LE_API.stdout }}", "*.{{ LE_WILDCARD.stdout }}"]
+
 - name: Issue acme.sh certificate(s) (this will sleep for dns_sleep seconds)
   command: >-
     ./acme.sh --issue -d {{ item.domains | join(" -d ") }}
@@ -86,6 +105,7 @@
 - name: Install acme.sh certificate(s)
   command: >-
     ./acme.sh --install-cert -d {{ item.domains | first }}
+    --cert-file {{ acme_sh_copy_certs_to_path }}/cert-file.pem
     --key-file {{ acme_sh_copy_certs_to_path }}/key-file.key
     --fullchain-file {{ acme_sh_copy_certs_to_path }}/fullchain-file.pem
     --ca-file {{ acme_sh_copy_certs_to_path }}/ca-file.cer

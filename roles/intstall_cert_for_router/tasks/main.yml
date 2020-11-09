@@ -43,3 +43,12 @@
 
 - debug:
     msg: "{{result.stdout_lines}}"
+
+- name: Import the SSL certificate to AWS ACM (Certificate Manager)
+  shell: aws acm import-certificate --certificate fileb://cert-file.pem --private-key fileb://key-file.key --certificate-chain fileb://fullchain-file.pem --tags Key=Name,Value={{ certificate_name }}
+  args:
+    chdir: "{{ certificate_path }}"
+  register: cert_import
+
+- debug:
+    msg: "{{cert_import.stdout_lines}}"
